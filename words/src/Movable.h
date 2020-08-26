@@ -113,7 +113,7 @@ struct Movable
     void main(Arduboy2 & arduboy) {
         changeDirection(arduboy);
         setVelocities();
-        setPosition();
+        updatePosition();
     }
 
     /**
@@ -122,6 +122,7 @@ struct Movable
     void setVelocities()
     {
         if (!moving) {
+            // stopped
             vx = 0;
             vy = 0;
 
@@ -148,6 +149,7 @@ struct Movable
             return;
         }
 
+        // moving
         vx = vx + speed;
         vy = vy + speed;
 
@@ -164,7 +166,7 @@ struct Movable
      * Sets the position of the movable item
      * taking in account the velocity and the movement
      */
-    void setPosition()
+    void updatePosition()
     {
         previousX = x;
         previousY = y;
