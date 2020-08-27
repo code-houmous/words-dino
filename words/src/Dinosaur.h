@@ -25,7 +25,13 @@ struct Dinausor
         setStillBitmapIndex();
         setWalkingBitmapFrame();
 
-        Sprites::drawOverwrite(movable.x, movable.y, dinosaur, stillBitmapIndex + walkingBitmapFrame * 4);
+        Sprites::drawExternalMask(
+            movable.x, movable.y,
+            dinosaur,
+            dinosaur_mask,
+            stillBitmapIndex + walkingBitmapFrame * 4,
+            stillBitmapIndex + walkingBitmapFrame * 4
+        );
     }
 
     /**
