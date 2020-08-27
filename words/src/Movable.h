@@ -9,12 +9,34 @@
 struct Movable
 {
 
+public:
     // x position
     int8_t x;
 
     // y position
     int8_t y;
 
+    // speed vector
+    double speed = 0.2;
+
+    // inertia decrease
+    double inertia = 0.2;
+
+    // Is the item moving ? (true when moving and inertia)
+    bool moving = false;
+
+    // Possible directions for the movable item
+    enum struct Direction {
+        Left,
+        Right,
+        Up,
+        Down
+    };
+
+    // Current direction, even when stopped
+    Direction direction = Direction::Right;
+
+private:
     // previous x position
     int8_t previousX;
 
@@ -29,15 +51,6 @@ struct Movable
 
     // Max velocity
     double maxVelocity = 2;
-
-    // speed vector
-    double speed = 0.2;
-
-    // inertia decrease
-    double inertia = 0.2;
-
-    // Is the item moving ? (true when moving and inertia)
-    bool moving = false;
 
     // true if one of the direction button is pressed
     bool action = true;
@@ -55,17 +68,26 @@ struct Movable
     // Vector for moving
     Vector vector;
 
-    // Possible directions for the movable item
-    enum struct Direction {
-        Left,
-        Right,
-        Up,
-        Down
-    };
+public:
+    /**
+     * Main function to compute the positions
+     */
+    void main(Arduboy2 & arduboy) {
+        changeDirection(arduboy);
+        setVelocities();
+        updatePosition();
+    }
 
-    // Current direction, even when stopped
-    Direction direction = Direction::Right;
+    /**
+     * Does the moving item has run at least n pixels
+     */
+    bool hasSteppedPixels(uint8_t amount)
+    {
+        return abs(previousX - x) > amount - 1
+            || abs(previousY - y) >  amount -1;
+    }
 
+private:
     /**
      * Change the item direction according to pressed
      * buttons
@@ -105,15 +127,6 @@ struct Movable
 
         // None of the direction button is pressed
         action = false;
-    }
-
-    /**
-     * Main function to compute the positions
-     */
-    void main(Arduboy2 & arduboy) {
-        changeDirection(arduboy);
-        setVelocities();
-        updatePosition();
     }
 
     /**
@@ -173,15 +186,6 @@ struct Movable
 
         x += vx * vector.x;
         y += vy * vector.y;
-    }
-
-    /**
-     * Does the moving item has run at least n pixels
-     */
-    bool hasSteppedPixels(uint8_t amount)
-    {
-        return abs(previousX - x) > amount - 1
-            || abs(previousY - y) >  amount -1;
     }
 };
 
