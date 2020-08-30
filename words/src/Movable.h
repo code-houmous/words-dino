@@ -22,6 +22,12 @@ public:
     // inertia decrease
     double inertia = 0.2;
 
+    // Limited to stay in screen
+    bool limitedToScreen = true;
+
+    // the size of the thing
+    uint8_t size = 16;
+
     // Is the item moving ? (true when moving and inertia)
     bool moving = false;
 
@@ -36,12 +42,9 @@ public:
     // Current direction, even when stopped
     Direction direction = Direction::Right;
 
-private:
-    // previous x position
-    int8_t previousX;
-
-    // previous y position
-    int8_t previousY;
+    // Set it to true when you want the character to move
+    // but staying in place
+    bool moveOnPlace = false;
 
     // x velocity
     double vx = 0;
@@ -49,12 +52,7 @@ private:
     // y velocity
     double vy = 0;
 
-    // Max velocity
-    double maxVelocity = 2;
-
-    // true if one of the direction button is pressed
-    bool action = true;
-
+    // Vector for moving
     struct Vector {
         int8_t x = 0;
         int8_t y = 0;
@@ -65,8 +63,21 @@ private:
         };
     };
 
-    // Vector for moving
     Vector vector;
+
+private:
+    // previous x position
+    int8_t previousX;
+
+    // previous y position
+    int8_t previousY;
+
+
+    // Max velocity
+    double maxVelocity = 2;
+
+    // true if one of the direction button is pressed
+    bool action = true;
 
 public:
     /**
@@ -181,11 +192,35 @@ private:
      */
     void updatePosition()
     {
+        if (moveOnPlace) {
+            return;
+        }
+
         previousX = x;
         previousY = y;
 
         x += vx * vector.x;
         y += vy * vector.y;
+
+        if (!limitedToScreen) {
+            return;
+        }
+
+        if (x <= 0) {
+            x = 0;
+        }
+
+        if (x >= 128 - size) {
+            x = 128 - size;
+        }
+
+        if (y <= 0) {
+            y = 0;
+        }
+
+        if (y >= 64 - size) {
+            y = 64 - size;
+        }
     }
 };
 

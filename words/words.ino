@@ -18,6 +18,9 @@ void setup() {
     arduboy.setFrameRate(15);
 
     arduboy.initRandomSeed();
+
+    dinausor.movable.x = 64;
+    dinausor.movable.y = 32;
 }
 
 
@@ -34,6 +37,33 @@ void loop() {
     arduboy.pollButtons();
 
     mapGenerator.draw();
+
+    dinausor.movable.moveOnPlace = false;
+
+    if (mapGenerator.needToMoveMap(
+        dinausor.movable.x,
+        dinausor.movable.y,
+        dinausor.movable.direction
+    ) && dinausor.movable.hasSteppedPixels(1)
+    && dinausor.movable.moving) {
+        mapGenerator.moveMap(
+            dinausor.movable.vector.x,
+            dinausor.movable.vector.y,
+            dinausor.movable.vx,
+            dinausor.movable.vy
+        );
+        dinausor.movable.moveOnPlace = true;
+    }
+
+    arduboy.print(dinausor.movable.x);
+    arduboy.print("|");
+    arduboy.print(dinausor.movable.y);
+    arduboy.print("|");
+    arduboy.print(mapGenerator.mapOffsetX);
+    arduboy.print("|");
+    arduboy.print(mapGenerator.mapOffsetY);
+
+    //mapGenerator.moveMap(dinausor.movable.x, dinausor.movable.y);
     dinausor.draw(arduboy);
 
     // then we finaly we tell the arduboy to display what we just wrote to the display
