@@ -19,9 +19,9 @@ struct Dinausor
     /**
      * Draws the dinausor, main function
      */
-    void draw(Arduboy2 & arduboy)
+    void draw(Arduboy2 & arduboy, bool collision)
     {
-        movable.main(arduboy);
+        movable.main(arduboy, collision);
         setStillBitmapIndex();
         setWalkingBitmapFrame();
 

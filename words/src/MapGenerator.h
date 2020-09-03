@@ -206,6 +206,32 @@ struct MapGenerator
             );
         }
     }
+
+    bool collision(uint8_t characterX, uint8_t characterY, uint8_t size, int8_t vectorX, int8_t vectorY, Arduboy2 & arduboy)
+    {
+        // We calculate the 4 corners coordinates of the rectangle that represents the character
+        // We also make some adjustments on its size, because our character doesn't
+        // fill the whole rectangle
+        uint8_t leftTile = characterX + 6;
+        uint8_t rightTile = characterX + size - 6;
+        uint8_t topTile = characterY + 10;
+        uint8_t bottomTile = characterY + size - 2;
+
+        for (uint8_t i = leftTile; i <= rightTile; i++) {
+            for (uint8_t j = topTile; j <= bottomTile; j++) {
+                if (
+                    world
+                        [(j + abs(mapOffsetY)) / TILE_SIZE]
+                        [(i + abs(mapOffsetX)) / TILE_SIZE]
+                        == WALL
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 };
 
 #endif

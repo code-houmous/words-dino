@@ -40,6 +40,17 @@ void loop() {
 
     dinausor.movable.moveOnPlace = false;
 
+    bool collision = mapGenerator.collision(
+        dinausor.movable.x,
+        dinausor.movable.y,
+        dinausor.movable.size,
+        dinausor.movable.vector.x,
+        dinausor.movable.vector.y,
+        arduboy
+    );
+
+    arduboy.print(collision);
+
     if (mapGenerator.needToMoveMap(
         dinausor.movable.x,
         dinausor.movable.y,
@@ -55,16 +66,8 @@ void loop() {
         dinausor.movable.moveOnPlace = true;
     }
 
-    arduboy.print(dinausor.movable.x);
-    arduboy.print("|");
-    arduboy.print(dinausor.movable.y);
-    arduboy.print("|");
-    arduboy.print(mapGenerator.mapOffsetX);
-    arduboy.print("|");
-    arduboy.print(mapGenerator.mapOffsetY);
-
     //mapGenerator.moveMap(dinausor.movable.x, dinausor.movable.y);
-    dinausor.draw(arduboy);
+    dinausor.draw(arduboy, collision);
 
     // then we finaly we tell the arduboy to display what we just wrote to the display
     arduboy.display();

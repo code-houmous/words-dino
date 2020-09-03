@@ -83,9 +83,15 @@ public:
     /**
      * Main function to compute the positions
      */
-    void main(Arduboy2 & arduboy) {
+    void main(Arduboy2 & arduboy, bool collision) {
         changeDirection(arduboy);
         setVelocities();
+
+        if (collision) {
+            x = previousX - vector.x;
+            y = previousY - vector.y;
+        }
+
         updatePosition();
     }
 
