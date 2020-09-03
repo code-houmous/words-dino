@@ -88,8 +88,7 @@ public:
         setVelocities();
 
         if (collision) {
-            x = previousX - vector.x;
-            y = previousY - vector.y;
+            collisionResponse();
         }
 
         updatePosition();
@@ -227,6 +226,15 @@ private:
         if (y >= 64 - size) {
             y = 64 - size;
         }
+    }
+
+    /**
+     * What happens in case of collision
+     */
+    void collisionResponse()
+    {
+        x = previousX - vector.x;
+        y = previousY - vector.y;
     }
 };
 
