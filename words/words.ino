@@ -2,10 +2,27 @@
 
 #include "src/Dinosaur.h"
 #include "src/MapGenerator.h"
+#include "src/Word.h"
 
 Arduboy2 arduboy;
 Dinausor dinausor;
 MapGenerator mapGenerator;
+
+Word words[4] = {
+    Word("BALLON", 6),
+    Word("PIED", 4),
+    Word("DINAUSORE", 9),
+    Word("ALLO", 4)
+};
+
+enum struct Screen {
+    Map,
+    Letters
+};
+
+Screen screen = Screen::Letters;
+
+uint8_t currentWordIndex = 0;
 
 // This function runs once in your game.
 // use it for anything that needs to be set only once in your game.
@@ -19,8 +36,10 @@ void setup() {
 
     arduboy.initRandomSeed();
 
-    dinausor.movable.x = 64;
-    dinausor.movable.y = 32;
+    dinausor.movable.x = 16;
+    dinausor.movable.y = 16;
+
+    shuffleWords();
 }
 
 
@@ -36,7 +55,40 @@ void loop() {
 
     arduboy.pollButtons();
 
+    if (arduboy.justPressed(A_BUTTON)) {
+        if (screen == Screen::Letters) {
+            screen = Screen::Map;
+        } else {
+            screen = Screen::Letters;
+        }
+    }
+
+    if (screen == Screen::Letters) {
+        drawLetters();
+    } else {
+        drawMap();
+    }
+
+    // then we finaly we tell the arduboy to display what we just wrote to the display
+    arduboy.display();
+}
+
+/**
+ * Draws the letters
+ */
+void drawLetters()
+{
+    arduboy.setCursor(16, 30);
+    words[currentWordIndex].draw(arduboy);
+}
+
+/**
+ * Draws the map
+ */
+void drawMap()
+{
     mapGenerator.draw();
+    //arduboy.fillRect(0, 50, 64, 16, BLACK);
 
     dinausor.movable.moveOnPlace = false;
 
@@ -48,8 +100,6 @@ void loop() {
         dinausor.movable.vector.y,
         arduboy
     );
-
-    arduboy.print(collision);
 
     if (mapGenerator.needToMoveMap(
         dinausor.movable.x,
@@ -66,9 +116,26 @@ void loop() {
         dinausor.movable.moveOnPlace = true;
     }
 
-    //mapGenerator.moveMap(dinausor.movable.x, dinausor.movable.y);
     dinausor.draw(arduboy, collision);
+}
 
-    // then we finaly we tell the arduboy to display what we just wrote to the display
-    arduboy.display();
+/**
+ * Shuffle words
+ */
+void shuffleWords()
+{
+    for (uint8_t i; i<4; i++) {
+        // Pick a random index from 0 to i
+        uint8_t j = random(0, i+1);
+        swapWords(&words[i], &words[j]);
+    }
+}
+
+/**
+ * Swap words between each others
+ */
+void swapWords(Word *a, Word *b) {
+    Word temp = *a;
+    *a = *b;
+    *b = temp;
 }

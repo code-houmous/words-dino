@@ -36,7 +36,11 @@ public:
         Left,
         Right,
         Up,
-        Down
+        Down,
+        LeftUp,
+        LeftDown,
+        RightUp,
+        RightDown
     };
 
     // Current direction, even when stopped
@@ -112,6 +116,34 @@ private:
     {
         // by default
         action = true;
+
+        if (arduboy.pressed(LEFT_BUTTON) && arduboy.pressed(UP_BUTTON)) {
+            moving = true;
+            vector.set(-1, -1);
+            direction = Direction::LeftUp;
+            return;
+        }
+
+        if (arduboy.pressed(LEFT_BUTTON) && arduboy.pressed(DOWN_BUTTON)) {
+            moving = true;
+            vector.set(-1, 1);
+            direction = Direction::LeftDown;
+            return;
+        }
+
+        if (arduboy.pressed(RIGHT_BUTTON) && arduboy.pressed(UP_BUTTON)) {
+            moving = true;
+            vector.set(1, -1);
+            direction = Direction::RightUp;
+            return;
+        }
+
+        if (arduboy.pressed(RIGHT_BUTTON) && arduboy.pressed(DOWN_BUTTON)) {
+            moving = true;
+            vector.set(1, 1);
+            direction = Direction::RightDown;
+            return;
+        }
 
         if (arduboy.pressed(LEFT_BUTTON)) {
             moving = true;
