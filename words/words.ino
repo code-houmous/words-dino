@@ -8,11 +8,17 @@ Arduboy2 arduboy;
 Dinausor dinausor;
 MapGenerator mapGenerator;
 
-Word words[4] = {
+Word words[10] = {
+    Word("CIEL", 4),
+    Word("OUPS", 4),
+    Word("NINJAGO", 7),
+    Word("ALLO", 4),
     Word("BALLON", 6),
-    Word("PIED", 4),
-    Word("DINAUSORE", 9),
-    Word("ALLO", 4)
+    Word("DINOSAURE", 9),
+    Word("CHOCOLAT", 8),
+    Word("BONHOMME", 8),
+    Word("PAPRIKA", 7),
+    Word("FRAISE", 6)
 };
 
 enum struct Screen {
@@ -20,9 +26,14 @@ enum struct Screen {
     Letters
 };
 
-Screen screen = Screen::Letters;
+Screen screen = Screen::Map;
 
-uint8_t currentWordIndex = 0;
+uint8_t currentWordIndex = 10;
+
+uint8_t lastDiscoveredLetterIndex = 0;
+
+// True when the game needs to regenerate the map and the word
+bool reload = true;
 
 // This function runs once in your game.
 // use it for anything that needs to be set only once in your game.
@@ -50,6 +61,24 @@ void loop() {
     if (!(arduboy.nextFrame()))
         return;
 
+    if (reload) {
+        arduboy.initRandomSeed();
+        screen = Screen::Map;
+
+        currentWordIndex++;
+        if (currentWordIndex > 10) {
+            currentWordIndex = 0;
+        }
+
+        lastDiscoveredLetterIndex = 0;
+
+        mapGenerator.newMap();
+        mapGenerator.putTreasuresRandomly(words[currentWordIndex]);
+
+        reload = false;
+        return;
+    }
+
     // first we clear our screen to black
     arduboy.clear();
 
@@ -61,7 +90,45 @@ void loop() {
         } else {
             screen = Screen::Letters;
         }
+
+        if (lastDiscoveredLetterIndex > words[currentWordIndex].length) {
+            reload = true;
+        }
     }
+
+    if (arduboy.justPressed(B_BUTTON)) {
+        if (lastDiscoveredLetterIndex == words[currentWordIndex].length) {
+            // Not working for now :/
+            //reload = true;
+            return;
+        }
+
+        if (screen == Screen::Letters) {
+            screen = Screen::Map;
+            return;
+        }
+
+        // A treasure has been found
+        // We update the world map to put an opened treasure tile
+        // corresponding to the letter
+        if (mapGenerator.onClosedTreasure(
+            dinausor.movable.x,
+            dinausor.movable.y,
+            dinausor.movable.size
+        )) {
+            screen = Screen::Letters;
+            words[currentWordIndex].discoverLetter(lastDiscoveredLetterIndex);
+            mapGenerator.updateTileAt(
+                dinausor.movable.x,
+                dinausor.movable.y,
+                dinausor.movable.size,
+                4,
+                5
+            );
+            lastDiscoveredLetterIndex++;
+        }
+    }
+
 
     if (screen == Screen::Letters) {
         drawLetters();
@@ -88,17 +155,13 @@ void drawLetters()
 void drawMap()
 {
     mapGenerator.draw();
-    //arduboy.fillRect(0, 50, 64, 16, BLACK);
 
     dinausor.movable.moveOnPlace = false;
 
     bool collision = mapGenerator.collision(
         dinausor.movable.x,
         dinausor.movable.y,
-        dinausor.movable.size,
-        dinausor.movable.vector.x,
-        dinausor.movable.vector.y,
-        arduboy
+        dinausor.movable.size
     );
 
     if (mapGenerator.needToMoveMap(
@@ -124,7 +187,7 @@ void drawMap()
  */
 void shuffleWords()
 {
-    for (uint8_t i; i<4; i++) {
+    for (uint8_t i; i<10; i++) {
         // Pick a random index from 0 to i
         uint8_t j = random(0, i+1);
         swapWords(&words[i], &words[j]);

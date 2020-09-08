@@ -25,7 +25,6 @@ struct Word
         for (uint8_t i; i<size; i++) {
             letters[i] = word[i];
             discoveredLetters[i] = false;
-            i++;
         }
         length = size;
     }
@@ -41,7 +40,7 @@ struct Word
             if (discoveredLetters[i]) {
                 arduboy.print(letters[i]);
             } else {
-                arduboy.print("_");
+                arduboy.print(F("_"));
             }
         }
     }

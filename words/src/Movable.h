@@ -17,22 +17,22 @@ public:
     int8_t y;
 
     // speed vector
-    double speed = 0.2;
+    double PROGMEM speed = 0.2;
 
     // inertia decrease
-    double inertia = 0.2;
+    double PROGMEM inertia = 0.2;
 
     // Limited to stay in screen
-    bool limitedToScreen = true;
+    bool PROGMEM limitedToScreen = true;
 
     // the size of the thing
-    uint8_t size = 16;
+    uint8_t PROGMEM size = 16;
 
     // Is the item moving ? (true when moving and inertia)
     bool moving = false;
 
     // Possible directions for the movable item
-    enum struct Direction {
+    enum struct PROGMEM Direction {
         Left,
         Right,
         Up,

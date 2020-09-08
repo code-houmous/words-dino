@@ -2,6 +2,7 @@
 #define MAPGENERATOR_H
 
 #include <Arduboy2.h>
+#include "Word.h"
 
 /**
  * The world map manager
@@ -13,25 +14,27 @@ struct MapGenerator
     #define TILE_SIZE 16
 
     // Types of map tiles
-    #define GRND 0
-    #define WALL 1
-    #define GRSS 2
-    #define FLWR 3
+    const uint8_t PROGMEM GRND = 0;
+    const uint8_t PROGMEM WALL = 1;
+    const uint8_t PROGMEM GRSS = 2;
+    const uint8_t PROGMEM FLWR = 3;
+    const uint8_t PROGMEM TRSRCLOSED = 4;
+    const uint8_t PROGMEM TRSROPENED = 5;
 
     // World size
-    #define WORLD_WIDTH 24
+    #define WORLD_WIDTH 23
     #define WORLD_HEIGHT 8
 
     // The points where the character stop moving
     // on screen, and the map starts moving instead
-    #define X_LIMIT_TO_MOVE_MAP 64
-    #define Y_LIMIT_TO_MOVE_MAP 32
+    const uint8_t PROGMEM X_LIMIT_TO_MOVE_MAP = 64;
+    const uint8_t PROGMEM Y_LIMIT_TO_MOVE_MAP = 32;
 
     // Number of tiles that could fit in width
-    const uint8_t mapWidth = WIDTH / TILE_SIZE;
+    const uint8_t PROGMEM mapWidth = WIDTH / TILE_SIZE;
 
     // Number of tiles that could fit in width
-    const uint8_t mapHeight = HEIGHT / TILE_SIZE;
+    const uint8_t PROGMEM mapHeight = HEIGHT / TILE_SIZE;
 
     // Position of the map
     int16_t mapOffsetX = 0;
@@ -39,23 +42,90 @@ struct MapGenerator
     // Position of the map
     int16_t mapOffsetY = 0;
 
-    // first map
-    uint8_t const world[WORLD_HEIGHT][WORLD_WIDTH] = {
-        {GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRND, WALL, WALL, WALL, WALL, GRSS, GRSS, GRSS, GRSS, GRND, GRND, GRND, GRSS, FLWR, GRSS, GRSS, FLWR},
-        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, GRSS, WALL, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS},
-        {GRND, GRND, WALL, FLWR, WALL, GRND, GRND, GRND, WALL, WALL, WALL, WALL, GRSS, GRND, GRSS, GRSS, GRSS, GRND, WALL, GRND, GRSS, GRND, GRND, FLWR},
-        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRSS, WALL, GRND, GRND, GRND, GRND, GRND, FLWR},
-        {GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRND, GRSS, GRND, GRND, GRND, GRND, GRND, WALL, GRND, GRSS},
-        {GRND, GRND, GRND, WALL, GRND, GRND, WALL, GRND, WALL, WALL, WALL, WALL, GRSS, GRSS, GRND, GRSS, GRND, GRND, GRND, GRSS, GRND, GRND, GRND, FLWR},
-        {GRND, GRSS, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRSS, WALL, GRSS, GRSS, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRSS, GRND, GRSS},
-        {WALL, WALL, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, WALL, WALL, GRSS, GRSS, WALL, WALL, GRND, GRND, GRND, GRSS, FLWR, FLWR, GRSS, FLWR}
+    // A struct to help us to store coordinates of some tiles
+    struct Coordinates {
+        uint8_t x;
+        uint8_t y;
     };
+
+    // Coordinates where we can put a treasure
+    // Size is defined by the world size divided by 2
+    // because let's say 50% of the world is walkable
+    // We are going to fill this array by going through
+    // the world starting by the end, so the treasures have more chance
+    // to be far from the player
+    Coordinates walkableTiles[WORLD_HEIGHT * WORLD_WIDTH / 2];
+
+    // Amount of walkable tiles
+    uint8_t numberOfWalkableTiles = 0;
+
+    // first map
+    uint8_t PROGMEM maps[2][WORLD_HEIGHT][WORLD_WIDTH] = {
+        {
+        {GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRND, WALL, WALL, WALL, GRSS, GRSS, GRSS, GRSS, GRND, GRND, GRND, GRSS, FLWR, GRSS, GRSS, FLWR},
+        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, FLWR, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS},
+        {GRND, GRND, WALL, FLWR, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRND, GRSS, GRSS, GRSS, GRND, WALL, GRND, GRSS, GRND, GRND, FLWR},
+        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRSS, WALL, GRND, GRND, GRND, GRND, GRND, FLWR},
+        {GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRND, GRSS, GRND, GRND, GRND, GRND, GRND, WALL, GRND, GRSS},
+        {GRND, GRND, GRND, WALL, GRND, GRND, WALL, GRND, WALL, WALL, WALL, GRSS, GRSS, GRND, GRSS, GRND, GRND, GRND, GRSS, GRND, GRND, GRND, FLWR},
+        {GRND, GRSS, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, WALL, FLWR, GRSS, GRSS, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRSS, GRND, GRSS},
+        {WALL, WALL, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRSS, WALL, WALL, GRND, GRND, GRND, GRSS, FLWR, FLWR, GRSS, FLWR}
+        },
+        {
+        {GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRND, WALL, WALL, WALL, GRSS, GRSS, GRSS, GRSS, GRND, GRND, GRND, GRSS, FLWR, GRSS, GRSS, FLWR},
+        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, FLWR, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS},
+        {GRND, GRND, WALL, FLWR, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRND, GRSS, GRSS, GRSS, GRND, WALL, GRND, GRSS, GRND, GRND, FLWR},
+        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRSS, WALL, GRND, GRND, GRND, GRND, GRND, FLWR},
+        {GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRND, GRSS, GRND, GRND, GRND, GRND, GRND, WALL, GRND, GRSS},
+        {GRND, GRND, GRND, WALL, GRND, GRND, WALL, GRND, WALL, WALL, WALL, GRSS, GRSS, GRND, GRSS, GRND, GRND, GRND, GRSS, GRND, GRND, GRND, FLWR},
+        {GRND, GRSS, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, WALL, FLWR, GRSS, GRSS, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRSS, GRND, GRSS},
+        {WALL, WALL, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRSS, WALL, WALL, GRND, GRND, GRND, GRSS, FLWR, FLWR, GRSS, FLWR}
+        }
+    };
+
+    // first map
+    uint8_t world[WORLD_HEIGHT][WORLD_WIDTH];
 
     // Index of tiles that represents ground
     uint8_t tilesGroundIndexes[3] = {0, 2, 4};
 
     // Index of tiles that represents walls
     uint8_t tilesWallIndexes[3] = {1, 3, 5};
+
+    void newMap()
+    {
+        // Chosing randomly the map
+        uint8_t map = random(0, 1);
+
+        // Getting the world
+        for (uint8_t y = 0; y < WORLD_HEIGHT; y++) {
+            for (uint8_t x = 0; x < WORLD_WIDTH; x++) {
+                world[y][x] = maps[map][y][x];
+            }
+        }
+
+        // Erasing the walkable tiles
+        uint8_t index = 0;
+        for (uint8_t i=0; i<WORLD_HEIGHT*WORLD_WIDTH; i++) {
+            walkableTiles[i] = Coordinates();
+        }
+
+        // We reference all walkable tiles
+        for (int8_t y = WORLD_HEIGHT; y >= 0; y=y-2) {
+            for (int8_t x = WORLD_WIDTH; x >= 0; x=x-2) {
+                if (world[y][x] == GRND) {
+                    Coordinates c;
+                    c.x = x;
+                    c.y = y;
+                    walkableTiles[index] = c;
+
+                    index++;
+                }
+            }
+        }
+
+        numberOfWalkableTiles = index - 1;
+    }
 
     /**
      * Main function
@@ -205,7 +275,7 @@ struct MapGenerator
                 tileX,
                 tileY,
                 mapTile,
-                6
+                7
             );
         }
 
@@ -217,13 +287,46 @@ struct MapGenerator
                 6
             );
         }
+
+        if (world[y][x] == TRSRCLOSED) {
+            Sprites::drawOverwrite(
+                tileX,
+                tileY,
+                treasureTile,
+                0
+            );
+        }
+
+        if (world[y][x] == TRSROPENED) {
+            Sprites::drawOverwrite(
+                tileX,
+                tileY,
+                treasureTile,
+                2
+            );
+        }
     }
 
     /**
      * Returns true if a body collides with a solid tile map (like a WALL)
      */
-    bool collision(uint8_t bodyX, uint8_t bodyY, uint8_t bodySize, int8_t vectorX, int8_t vectorY, Arduboy2 & arduboy)
+    bool collision(uint8_t bodyX, uint8_t bodyY, uint8_t bodySize)
     {
+        return tileAt(bodyX, bodyY, bodySize, WALL);
+    }
+
+    /**
+     * Returns true if a body collides with a solid tile map (like a WALL)
+     */
+    bool onClosedTreasure(uint8_t bodyX, uint8_t bodyY, uint8_t bodySize)
+    {
+        return tileAt(bodyX, bodyY, bodySize, TRSRCLOSED);
+    }
+
+    /**
+     * Returns true if the body collides with a given tile type
+     */
+    bool tileAt(uint8_t bodyX, uint8_t bodyY, uint8_t bodySize, uint8_t tileType) {
         // We calculate the 4 corners coordinates of the rectangle that represents the character
         // We also make some adjustments on its size, because our character doesn't
         // fill the whole rectangle
@@ -238,7 +341,7 @@ struct MapGenerator
                     world
                         [(j + abs(mapOffsetY)) / TILE_SIZE]
                         [(i + abs(mapOffsetX)) / TILE_SIZE]
-                        == WALL
+                        == tileType
                 ) {
                     return true;
                 }
@@ -246,6 +349,58 @@ struct MapGenerator
         }
 
         return false;
+    }
+
+    /**
+     * Update a tile type
+     */
+    void updateTileAt(uint8_t bodyX, uint8_t bodyY, uint8_t bodySize, uint8_t tileType, uint8_t toType) {
+        uint8_t leftTile = bodyX + 6;
+        uint8_t rightTile = bodyX + bodySize - 6;
+        uint8_t topTile = bodyY + 10;
+        uint8_t bottomTile = bodyY + bodySize - 2;
+
+        for (uint8_t i = leftTile; i <= rightTile; i++) {
+            for (uint8_t j = topTile; j <= bottomTile; j++) {
+                if (
+                    world
+                        [(j + abs(mapOffsetY)) / TILE_SIZE]
+                        [(i + abs(mapOffsetX)) / TILE_SIZE]
+                        == tileType
+                ) {
+                    world
+                        [(j + abs(mapOffsetY)) / TILE_SIZE]
+                        [(i + abs(mapOffsetX)) / TILE_SIZE]
+                        = toType;
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Dispose treasures randomly across the map
+     */
+    void putTreasuresRandomly(Word word) {
+        // Shuffle the walkable tiles table
+        for (uint8_t i; i<numberOfWalkableTiles; i++) {
+            // Pick a random index from 0 to i
+            uint8_t j = random(0, i+1);
+            swapCoordinates(&walkableTiles[i], &walkableTiles[j]);
+        }
+
+        for (uint8_t i=0; i<word.length; i++) {
+            world[walkableTiles[i].y][walkableTiles[i].x] = TRSRCLOSED;
+        }
+    }
+
+    /**
+     * Swap coordinates of walkable tiles between each others
+     */
+    void swapCoordinates(Coordinates *a, Coordinates *b) {
+        Coordinates temp = *a;
+        *a = *b;
+        *b = temp;
     }
 };
 
