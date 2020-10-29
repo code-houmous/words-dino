@@ -54,7 +54,7 @@ struct MapGenerator
     // We are going to fill this array by going through
     // the world starting by the end, so the treasures have more chance
     // to be far from the player
-    Coordinates walkableTiles[WORLD_HEIGHT * WORLD_WIDTH / 2];
+    Coordinates walkableTiles[100];
 
     // Amount of walkable tiles
     uint8_t numberOfWalkableTiles = 0;
@@ -72,16 +72,19 @@ struct MapGenerator
         {WALL, WALL, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRSS, WALL, WALL, GRND, GRND, GRND, GRSS, FLWR, FLWR, GRSS, FLWR}
         },
         {
-        {GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRND, WALL, WALL, WALL, GRSS, GRSS, GRSS, GRSS, GRND, GRND, GRND, GRSS, FLWR, GRSS, GRSS, FLWR},
-        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, FLWR, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS},
-        {GRND, GRND, WALL, FLWR, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRND, GRSS, GRSS, GRSS, GRND, WALL, GRND, GRSS, GRND, GRND, FLWR},
-        {GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRSS, WALL, GRND, GRND, GRND, GRND, GRND, FLWR},
-        {GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRND, GRSS, GRND, GRND, GRND, GRND, GRND, WALL, GRND, GRSS},
-        {GRND, GRND, GRND, WALL, GRND, GRND, WALL, GRND, WALL, WALL, WALL, GRSS, GRSS, GRND, GRSS, GRND, GRND, GRND, GRSS, GRND, GRND, GRND, FLWR},
-        {GRND, GRSS, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, WALL, FLWR, GRSS, GRSS, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRSS, GRND, GRSS},
-        {WALL, WALL, WALL, WALL, WALL, GRND, GRND, GRND, WALL, WALL, WALL, GRSS, GRSS, WALL, WALL, GRND, GRND, GRND, GRSS, FLWR, FLWR, GRSS, FLWR}
+        {GRND, GRND, WALL, FLWR, FLWR, WALL, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRSS, WALL, WALL, GRND, GRND, GRND, GRSS, GRSS, GRSS},
+        {GRND, GRND, WALL, WALL, WALL, WALL, GRND, GRND, GRND, GRSS, GRSS, GRSS, GRND, GRSS, GRSS, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRSS},
+        {GRND, GRND, GRSS, GRSS, GRSS, GRND, GRND, WALL, GRSS, FLWR, FLWR, GRSS, GRND, GRND, WALL, WALL, GRND, GRND, GRND, GRSS, GRND, GRND, GRSS},
+        {GRND, GRND, GRSS, GRSS, GRSS, GRND, GRND, GRND, GRSS, FLWR, FLWR, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, WALL, WALL},
+        {GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRSS, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, WALL, FLWR},
+        {WALL, WALL, WALL, WALL, GRND, GRND, GRND, GRND, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, WALL, WALL},
+        {WALL, GRND, GRND, GRND, GRND, GRSS, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, GRND, WALL, WALL, WALL, GRND, GRND, GRND, GRSS},
+        {WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRND, GRND, GRND, GRND, GRND, GRND, GRND, WALL, GRND, GRND, GRND, GRND, GRSS, GRSS}
         }
     };
+
+    // Current map printed
+    uint8_t currentMapIndex;
 
     // first map
     uint8_t world[WORLD_HEIGHT][WORLD_WIDTH];
@@ -92,15 +95,26 @@ struct MapGenerator
     // Index of tiles that represents walls
     uint8_t tilesWallIndexes[3] = {1, 3, 5};
 
-    void newMap()
+    MapGenerator()
     {
         // Chosing randomly the map
-        uint8_t map = random(0, 1);
+    }
+
+    void newMap()
+    {
+        mapOffsetX = 0;
+        mapOffsetY = 0;
+
+        currentMapIndex = random(0, 4);
+        currentMapIndex++;
+        if (currentMapIndex > 1) {
+            currentMapIndex = 0;
+        }
 
         // Getting the world
         for (uint8_t y = 0; y < WORLD_HEIGHT; y++) {
             for (uint8_t x = 0; x < WORLD_WIDTH; x++) {
-                world[y][x] = maps[map][y][x];
+                world[y][x] = maps[currentMapIndex][y][x];
             }
         }
 
@@ -111,8 +125,8 @@ struct MapGenerator
         }
 
         // We reference all walkable tiles
-        for (int8_t y = WORLD_HEIGHT; y >= 0; y=y-2) {
-            for (int8_t x = WORLD_WIDTH; x >= 0; x=x-2) {
+        for (int8_t y = WORLD_HEIGHT; y >= 0; y=y-3) {
+            for (int8_t x = WORLD_WIDTH; x >= 0; x=x-3) {
                 if (world[y][x] == GRND) {
                     Coordinates c;
                     c.x = x;
@@ -124,7 +138,7 @@ struct MapGenerator
             }
         }
 
-        numberOfWalkableTiles = index - 1;
+        numberOfWalkableTiles = index;
     }
 
     /**
@@ -389,7 +403,7 @@ struct MapGenerator
             swapCoordinates(&walkableTiles[i], &walkableTiles[j]);
         }
 
-        for (uint8_t i=0; i<word.length; i++) {
+        for (uint8_t i=0; i<=word.length+1; i++) {
             world[walkableTiles[i].y][walkableTiles[i].x] = TRSRCLOSED;
         }
     }

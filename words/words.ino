@@ -14,7 +14,7 @@ Word words[10] = {
     Word("NINJAGO", 7),
     Word("ALLO", 4),
     Word("BALLON", 6),
-    Word("DINOSAURE", 9),
+    Word("BROCOLIS", 8),
     Word("CHOCOLAT", 8),
     Word("BONHOMME", 8),
     Word("PAPRIKA", 7),
@@ -47,8 +47,6 @@ void setup() {
 
     arduboy.initRandomSeed();
 
-    dinausor.movable.x = 16;
-    dinausor.movable.y = 16;
 
     shuffleWords();
 }
@@ -62,7 +60,9 @@ void loop() {
         return;
 
     if (reload) {
-        arduboy.initRandomSeed();
+        dinausor.movable.x = 16;
+        dinausor.movable.y = 16;
+
         screen = Screen::Map;
 
         currentWordIndex++;

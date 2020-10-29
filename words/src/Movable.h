@@ -17,7 +17,7 @@ public:
     int8_t y;
 
     // speed vector
-    double PROGMEM speed = 0.2;
+    double PROGMEM speed = 0.4;
 
     // inertia decrease
     double PROGMEM inertia = 0.2;
